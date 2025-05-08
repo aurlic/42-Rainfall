@@ -11,7 +11,7 @@ Dump of assembler code for function main:
 End of assembler dump.
 ```
 
-We notice a `v` function, let's have a look at it with `radare2`:
+We notice a `v()` function, let's have a look at it with `radare2`:
 ```bash
 [0x080483f0]> pdf @ sym.v
             ; CALL XREF from sub.main_804851a @ 0x8048520(x)
